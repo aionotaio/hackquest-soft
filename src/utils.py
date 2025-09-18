@@ -74,7 +74,7 @@ class Utils:
             )
         elif isinstance(obj, Quiz):
             return QuizDB(**obj.model_dump())
-        elif isinstance(obj, UserQuiz):
+        else:
             return UserQuizDB(
                 is_completed=obj.is_completed,
                 reward=obj.reward,
@@ -90,7 +90,7 @@ class Utils:
 
     @staticmethod
     def read_strings_from_file(path: str) -> list[str]:
-        strings = []
+        strings: list[str] = []
         with open(path, "r") as f:
             for line in f:
                 line = line.strip()
@@ -99,7 +99,7 @@ class Utils:
         return strings
 
     @staticmethod
-    def read_json(path: str, encoding: str | None = None) -> list | dict:
+    def read_json(path: str, encoding: str | None = None) -> list[Any] | dict[str, Any]:
         with open(path, 'r', encoding=encoding) as file:
             return json.loads(file.read())
         

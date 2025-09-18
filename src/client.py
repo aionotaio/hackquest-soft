@@ -5,6 +5,7 @@ from loguru import logger
 from bs4 import BeautifulSoup as BS
 from tenacity import retry, stop_after_attempt, wait_random, retry_if_result
 from better_proxy import Proxy
+
 from src.utils import Utils
 from src.base import BaseClient
 from src.models import Quest, UserData, ResultData, Quiz, Ecosystem, Course, Phase, PhaseQuiz, CertificateData
@@ -20,7 +21,7 @@ class LoginClient(BaseClient):
     
     def get_data_to_login(self) -> tuple[str, str] | None:
         headers = self._get_headers()
-        payload = {
+        payload: dict[str, str | dict[str, str]] = {
             "query": "\n    mutation GetNonce($address: String\u0021) {\n  nonce: getNonce(address: $address) {\n    nonce\n    message\n  }\n}\n    ",
             "variables": {
                 "address": self.wallet_address
@@ -65,7 +66,7 @@ class LoginClient(BaseClient):
 
     def login(self, message: str, nonce: str, signature: str) -> UserData | None:
         headers = self._get_headers()
-        payload = {
+        payload: dict[str, str | dict[str, dict[str, str | int]]] = {
             "query": "\n    mutation LoginByWallet($input: SignInByWalletInput\u0021) {\n  loginByWallet(input: $input) {\n    access_token\n    refresh_token\n    user {\n      ...baseUserInfo\n    }\n  }\n}\n    \n    fragment baseUserInfo on UserExtend {\n  id\n  uid\n  name\n  avatar\n  username\n  nickname\n  email\n  role\n  voteRole\n  status\n  inviteCode\n  invitedBy\n  hackCoin {\n    coin\n  }\n  levelInfo {\n    level\n    exp\n  }\n  organizations {\n    id\n    creatorId\n    slug\n    name\n    displayName\n    backgroundImage\n    oneLineIntro\n    about\n    logo\n    webSite\n    socialLinks\n    profileSectionState\n    permissionCode\n    permissions\n    createdAt\n    active\n    members {\n      id\n      userId\n      isOwner\n    }\n    features {\n      featureCode\n    }\n  }\n}\n    ",
             "variables": {
                 "input": {
@@ -123,13 +124,13 @@ class LoginClient(BaseClient):
             return
         
         headers = self._get_headers()
-        payload = {
+        payload: dict[str, str | dict[str, str]] = {
             "query": "\n    mutation ActivateUser($accessToken: String\u0021, $inviteCode: String) {\n  activateUser(access_token: $accessToken, inviteCode: $inviteCode) {\n    access_token\n    user {\n      ...baseUserInfo\n    }\n    status\n    error\n  }\n}\n    \n    fragment baseUserInfo on UserExtend {\n  id\n  uid\n  name\n  avatar\n  username\n  nickname\n  email\n  role\n  voteRole\n  status\n  inviteCode\n  invitedBy\n  hackCoin {\n    coin\n  }\n  levelInfo {\n    level\n    exp\n  }\n  organizations {\n    id\n    creatorId\n    slug\n    name\n    displayName\n    backgroundImage\n    oneLineIntro\n    about\n    logo\n    webSite\n    socialLinks\n    profileSectionState\n    permissionCode\n    permissions\n    createdAt\n    active\n    members {\n      id\n      userId\n      isOwner\n    }\n    features {\n      featureCode\n    }\n  }\n}\n    ",
             "variables": {
                 "accessToken": self.access_token
             }
         }
-        if ref_code:
+        if ref_code and isinstance(payload["variables"], dict):
             payload["variables"]["inviteCode"] = ref_code
         try:
             response = self.session.post(
@@ -184,7 +185,7 @@ class PetClient(BaseClient):
             logger.error(f'{self.account_index+1} | Empty access token')
             return False
         
-        payload = {
+        payload: dict[str, str | dict[str, str]] = {
             "query": "\n    mutation CreatePet($name: String\u0021) {\n  createPet(name: $name) {\n    id\n    name\n    level\n    exp\n    expNextLevel\n    userId\n    hatch\n    extra\n  }\n}\n    ",
             "variables": {
                 "name": name
@@ -227,7 +228,7 @@ class PetClient(BaseClient):
             logger.error(f'{self.account_index+1} | Empty access token')
             return False
         
-        payload = {
+        payload: dict[str, str | dict[str, int]] = {
             "query":"\n    mutation FeedPet($amount: Float\u0021) {\n  feedPet(amount: $amount) {\n    userId\n    level\n    exp\n  }\n}\n    ",
             "variables": {
                 "amount": amount
@@ -272,7 +273,7 @@ class QuestClient(BaseClient):
         
         headers = self._get_headers()
         headers["authorization"] = f"Bearer {self.access_token}"
-        payload = {
+        payload: dict[str, str | dict[str, str]] = {
             "query": "\n    mutation ClaimMissionReward($missionId: String\u0021) {\n  claimMissionReward(missionId: $missionId) {\n    coin\n    exp\n  }\n}\n    ",
             "variables": {
                 "missionId": quest.id
@@ -334,7 +335,7 @@ class LearningClient(BaseClient):
         
         headers = self._get_headers()
         headers["authorization"] = f"Bearer {self.access_token}"
-        payload = {
+        payload: dict[str, str | dict[str, str]] = {
             "query": "\n    query FindActiveEcosystem {\n  ecosystem: findActiveEcosystem {\n    id\n    image\n    type\n  }\n}\n    ",
             "variables": {}
         }
@@ -371,7 +372,7 @@ class LearningClient(BaseClient):
         
         headers = self._get_headers()
         headers["authorization"] = f"Bearer {self.access_token}"
-        payload = {
+        payload: dict[str, str | dict[str, dict[str, dict[str, str]]]] = {
             "query": "\n    query FindActiveEcosystemInfo($where: EcosystemInfoWhereUniqueInput\u0021) {\n  ecosystem: findUniqueEcosystemInfo(where: $where) {\n    ecosystemId\n    lang\n    basic {\n      type\n      image\n    }\n    phases {\n      id\n      coin\n      title\n      progress\n      order\n      cover\n      certificateId\n      certificate {\n        id\n        image\n        name\n        template\n        chainId\n        contract\n        credits\n        extra\n        userCertification {\n          claimed\n          mint\n          username\n          certificateId\n          certificationId\n        }\n      }\n      rewardClaimRecord {\n        claimed\n        coin\n      }\n      courses {\n        id\n        alias\n        type\n        title\n        icon\n        progress\n        order\n        currentPageId\n        units {\n          id\n          currentPageId\n          title\n          progress\n          isCompleted\n        }\n      }\n      quizzes {\n        id\n        order\n        progress\n        currentPageId\n        extra\n        quizList {\n          id\n          correct\n        }\n        description\n      }\n      extra\n      build {\n        hackathons {\n          id\n          name\n          alias\n          status\n          currentStatus\n          info {\n            image\n            intro\n          }\n          timeline {\n            timeZone\n            openReviewSame\n            registrationOpen\n            registrationClose\n            submissionOpen\n            submissionClose\n            rewardTime\n          }\n        }\n      }\n    }\n    currentPhase {\n      id\n      title\n      learningInfo {\n        id\n        alias\n        type\n        learningId\n      }\n    }\n  }\n}\n    ",
             "variables": {
                 "where": {
@@ -400,7 +401,7 @@ class LearningClient(BaseClient):
                     logger.error(f'{self.account_index+1} | Full response: {response_data}')
                     return
                                 
-                phases_models = []
+                phases_models: list[Phase] = []
 
                 phases: list[dict[str, Any]] = ecosystem_data.get("phases", [])
                 if not phases:
@@ -425,7 +426,7 @@ class LearningClient(BaseClient):
                         logger.error(f'{self.account_index+1} | Full response: {response_data}')
                         return
                          
-                    course_models = []
+                    course_models: list[Course] = []
                     
                     for course in courses:
                         course_id: str = course.get("id", "")
@@ -440,8 +441,8 @@ class LearningClient(BaseClient):
 
                     quizzes: list[dict[str, Any]] = phase.get("quizzes", [])
 
-                    quiz_models = []
-                    quiz_pages = []
+                    quiz_models: list[PhaseQuiz] = []
+                    quiz_pages: list[Quiz] = []
 
                     for quiz in quizzes:
                         quiz_id: str = quiz.get("id", "")
@@ -486,7 +487,7 @@ class LearningClient(BaseClient):
         
         headers = self._get_headers()
         headers["authorization"] = f"Bearer {self.access_token}"
-        payload = {
+        payload: dict[str, str | dict[str, dict[str, dict[str, str]]]] = {
             "query": "\n    query FindActiveEcosystemInfo($where: EcosystemInfoWhereUniqueInput\u0021) {\n  ecosystem: findUniqueEcosystemInfo(where: $where) {\n    ecosystemId\n    lang\n    basic {\n      type\n      image\n    }\n    phases {\n      id\n      coin\n      title\n      progress\n      order\n      cover\n      certificateId\n      certificate {\n        id\n        image\n        name\n        template\n        chainId\n        contract\n        credits\n        extra\n        userCertification {\n          claimed\n          mint\n          username\n          certificateId\n          certificationId\n        }\n      }\n      rewardClaimRecord {\n        claimed\n        coin\n      }\n      courses {\n        id\n        alias\n        type\n        title\n        icon\n        progress\n        order\n        currentPageId\n        units {\n          id\n          currentPageId\n          title\n          progress\n          isCompleted\n        }\n      }\n      quizzes {\n        id\n        order\n        progress\n        currentPageId\n        extra\n        quizList {\n          id\n          correct\n        }\n        description\n      }\n      extra\n      build {\n        hackathons {\n          id\n          name\n          alias\n          status\n          currentStatus\n          info {\n            image\n            intro\n          }\n          timeline {\n            timeZone\n            openReviewSame\n            registrationOpen\n            registrationClose\n            submissionOpen\n            submissionClose\n            rewardTime\n          }\n        }\n      }\n    }\n    currentPhase {\n      id\n      title\n      learningInfo {\n        id\n        alias\n        type\n        learningId\n      }\n    }\n  }\n}\n    ",
             "variables": {
                 "where": {
@@ -530,7 +531,7 @@ class LearningClient(BaseClient):
                     return
                 BaseClient.current_phase_id = phase_id
 
-                course_ids = []
+                course_ids: list[str] = []
 
                 courses: list[dict[str, Any]] = phase_data.get("courses", [])
                 if not courses:
@@ -539,7 +540,7 @@ class LearningClient(BaseClient):
                     return
                 
                 for course in courses:
-                    course_ids.append(course.get("id"))
+                    course_ids.append(course.get("id", ""))
 
                 logger.debug(f'{self.account_index+1} | Got [course_ids]: {course_ids}')
                 return course_ids
@@ -559,7 +560,7 @@ class LearningClient(BaseClient):
         
         headers = self._get_headers()
         headers["authorization"] = f"Bearer {self.access_token}"
-        payload = {
+        payload: dict[str, str | dict[str, dict[str, dict[str, str]]]] = {
             "query": "\n    query FindCourseUnits($where: CourseV2WhereInput) {\n  findCourseDetail(where: $where) {\n    units {\n      title\n      description\n      progress\n      pages {\n        id\n        title\n        isCompleted\n      }\n    }\n    alias\n    id\n    currentPageId\n    nextPageId\n  }\n}\n    ",
             "variables": {
                 "where": {
@@ -593,7 +594,7 @@ class LearningClient(BaseClient):
                     logger.error(f'{self.account_index+1} | Full response: {response_data}')
                     return
                 
-                quizzes = []
+                quizzes: list[Quiz] = []
 
                 for unit in units:
                     pages: list[dict[str, Any]] = unit.get("pages", [])
@@ -619,7 +620,7 @@ class LearningClient(BaseClient):
             logger.error(f'{self.account_index+1} | Empty [access_token]')
             return 0, 0, False
         
-        payload = {
+        payload: dict[str, str | dict[str, dict[str, str | bool | int]]] = {
             "query": "\n    mutation SubmitQuiz($input: SubmitQuizInput\u0021) {\n  submitQuiz(input: $input) {\n    treasure {\n      exp\n      coin\n    }\n  }\n}\n    ",
             "variables": {
                 "input": {
@@ -671,8 +672,8 @@ class LearningClient(BaseClient):
             logger.error(f'{self.account_index+1} | Empty [access_token]')
             return
         
-        payload = {
-            "query":" \n    query FindUniquePage($where: PageV2WhereUniqueInput\u0021) {\n  findUniquePage(where: $where) {\n    id\n    title\n    content\n    type\n    completeQuiz\n    isCompleted\n    unitPage {\n      pageId\n      unitId\n    }\n  }\n}\n    ",
+        payload: dict[str, str | dict[str, dict[str, str]]] = {
+            "query": " \n    query FindUniquePage($where: PageV2WhereUniqueInput\u0021) {\n  findUniquePage(where: $where) {\n    id\n    title\n    content\n    type\n    completeQuiz\n    isCompleted\n    unitPage {\n      pageId\n      unitId\n    }\n  }\n}\n    ",
             "variables": {
                 "where": {
                     "id": quiz.id
@@ -709,7 +710,7 @@ class LearningClient(BaseClient):
                             for children_data in page_children:
                                 if children_data.get("type") in ["ChoiceFill", "Choice", "QuizA", "QuizB", "QuizC"]:
                                     number_of_quizzes += 1
-                elif isinstance(page_content, list):
+                else:
                     for page_part in page_content:
                         page_children: list[dict[str, Any]] = page_part.get("children", [])
                         for children_data in page_children:
@@ -726,8 +727,8 @@ class LearningClient(BaseClient):
             logger.error(f'{self.account_index+1} | Empty [access_token]')
             return False
         
-        payload = {
-            "query":"\n    mutation CompleteLesson($input: CompleteLessonInput\u0021) {\n  completeLesson(input: $input) {\n    nextLearningInfo {\n      learningId\n      id\n      type\n      alias\n    }\n  }\n}\n    ",
+        payload: dict[str, str | dict[str, dict[str, str | bool]]] = {
+            "query": "\n    mutation CompleteLesson($input: CompleteLessonInput\u0021) {\n  completeLesson(input: $input) {\n    nextLearningInfo {\n      learningId\n      id\n      type\n      alias\n    }\n  }\n}\n    ",
             "variables": {
                 "input": {
                     "lessonId": quiz.id,
@@ -767,7 +768,7 @@ class LearningClient(BaseClient):
             logger.error(f'{self.account_index+1} | Empty access token')
             return 0, 0, False
         
-        payload = {
+        payload: dict[str, str | dict[str, str]] = {
             "query": "\n    mutation ClaimPhaseReward($phaseId: String\u0021) {\n  claimPhaseReward(phaseId: $phaseId) {\n    coin\n    claimed\n  }\n}\n    ",
             "variables": {
                 "phaseId": phase_id
@@ -809,7 +810,7 @@ class LearningClient(BaseClient):
             logger.error(f'{self.account_index+1} | Empty access token')
             return False
         
-        payload = {
+        payload: dict[str, str | dict[str, str]] = {
             "query": "\n    mutation SwitchCurrentPhase($phaseId: String\u0021) {\n  switchCurrentPhase(phaseId: $phaseId)\n}\n    ",
             "variables": {
                 "phaseId": phase_id
@@ -845,7 +846,7 @@ class LearningClient(BaseClient):
             logger.error(f'{self.account_index+1} | Empty access token')
             return 0, 0, False
         
-        payload = {
+        payload: dict[str, str | dict[str, dict[str, str | bool]]] = {
             "query": "\n    mutation SubmitPhaseQuiz($input: SubmitPhaseQuizInput\u0021) {\n  submitPhaseQuiz(input: $input) {\n    isCompleted\n    tryAgain\n    progress\n    treasure {\n      coin\n      exp\n    }\n  }\n}\n    ",
             "variables": {
                 "input": {
@@ -899,7 +900,7 @@ class LearningClient(BaseClient):
             logger.error(f'{self.account_index+1} | Empty access token')
             return False
         
-        payload = {
+        payload: dict[str, str | dict[str, str]] = {
             "query": "\n    mutation ClaimCertification($certificationId: String\u0021, $username: String\u0021) {\n  certificate: claimCertification(\n    certificationId: $certificationId\n    username: $username\n  ) {\n    id\n    claimed\n    mint\n    username\n    txId\n    userId\n    certificateId\n    certificationId\n    certificateTime\n    certification {\n      chainId\n      name\n      contract\n      extra\n    }\n  }\n}\n    ",
             "variables": {
                 "certificationId": certificate_id,
@@ -997,7 +998,7 @@ class InfoClient(BaseClient):
          
         headers = self._get_headers()
         headers["authorization"] = f"Bearer {self.access_token}"
-        payload = {
+        payload: dict[str, str | dict[str, str]] = {
             "query": "\n    query ListActiveEcosystemInfos($lang: String\u0021) {\n  ecosystems: listActiveEcosystemInfos(lang: $lang) {\n    ecosystemId\n    basic {\n      image\n      type\n    }\n    progress {\n      progressMap\n      status\n    }\n  }\n}\n    ",
             "variables": {
                 "lang": "en"
@@ -1049,7 +1050,7 @@ class InfoClient(BaseClient):
          
         headers = self._get_headers()
         headers["authorization"] = f"Bearer {self.access_token}"
-        payload = {
+        payload: dict[str, str | dict[str, dict[str, dict[str, str]]]]  = {
             "query": "\n    query CertificateProgress($where: EcosystemInfoWhereUniqueInput\u0021) {\n  certificate: certificateProgress(where: $where) {\n    id\n    name\n    indexMap\n    progress\n    level\n    chainId\n    contract\n    credits\n    extra\n    template\n    userCertification {\n      mint\n      claimed\n      certificateId\n      certificationId\n      username\n    }\n  }\n}\n    ",
             "variables": {
                 "where": {
@@ -1118,7 +1119,7 @@ class InfoClient(BaseClient):
          
         headers = self._get_headers()
         headers["authorization"] = f"Bearer {self.access_token}"
-        payload = {
+        payload: dict[str, str | dict[str, str]] = {
             "query": "\n    mutation GetCertificationSignature($certificationId: String\u0021, $address: String\u0021) {\n  signature: getCertificationSignature(\n    certificationId: $certificationId\n    address: $address\n  ) {\n    msg\n    signature\n  }\n}\n    ",
             "variables": {
                 "certificationId": certificate_id,

@@ -2,15 +2,15 @@ import time
 import random
 
 from loguru import logger
+from better_proxy import Proxy
 from tenacity import retry, stop_after_attempt, wait_random, retry_if_result
 
 from src.db import Database
-from src.models import User, Quest, UserQuest, Ecosystem, Quiz, Phase, Course, UserDB, UserQuizDB, QuizDB, UserQuiz, UserQuestDB, QuestDB, PhaseQuiz, Network, UserData
+from src.models import User, Quest, UserQuest, Ecosystem, Quiz, Course, UserDB, UserQuizDB, QuizDB, UserQuiz, UserQuestDB, QuestDB, PhaseQuiz, Network
 from src.client import LoginClient, PetClient, QuestClient, LearningClient, InfoClient
 from src.utils import Utils
 from src.w3 import W3
-from src.vars import INIT_QUESTS, config
-from better_proxy import Proxy
+from src.vars import config
 
 
 class Facade:
