@@ -1,0 +1,35 @@
+general:
+    threads: 1
+    retry_attempts: 3
+    sepolia_rpc: https://ethereum-sepolia-rpc.publicnode.com
+    humanize: false
+
+delays:
+    delay_between_tasks:
+        min: 2
+        max: 3
+
+    delay_between_accs:
+        min: 5
+        max: 10
+
+    delay_between_retries:
+        min: 1
+        max: 3
+
+referral:
+    invite_by_next_ref_code: true                      
+    invite_by_certain_ref_code: false         
+    ref_code:
+
+actions:
+    - ethereum_ecosystem
+    - mint_certificates
+    - complete_quests
+    - manage_quack
+
+# available_actions:
+#     - ethereum_ecosystem                            # Completes learning track of Ethereum Developer and claims certificates
+#     - mint_certificates                             # Mints your learning certificates on-chain (need to have some Sepolia $ETH on balance)
+#     - complete_quests                               # Completes all possible quests
+#     - manage_quack                                  # Creates and feeds Quack on main page

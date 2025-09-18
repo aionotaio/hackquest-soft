@@ -1,0 +1,50 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_from_address",
+                "type": "address"
+            },
+            {
+                "internalType": "string",
+                "name": "_certificate_username",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "_chain_id",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "pass",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "_certificate_id",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "pass",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "pass",
+                "type": "string"
+            },
+            {
+                "internalType": "bytes",
+                "name": "_data",
+                "type": "bytes"
+            }
+        ],
+        "name": "0x18e770cc",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    }
+]
